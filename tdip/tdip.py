@@ -8,7 +8,7 @@ import pygimli as pg
 from pygimli.physics import ert
 from pygimli.physics.SIP import SIPSpectrum
 
-from ..importer import importTDIPdata
+from .importtdipdata import importTDIPdata
 from .modelling import (DCIPMModelling, DCIPSeigelModelling,
                         CCTDModelling, DCIPMSmoothModelling)
 from .decay import Decay
