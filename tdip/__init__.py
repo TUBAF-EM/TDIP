@@ -3,7 +3,7 @@
 """Time-domain induced polarization (TDIP) Data Manager."""
 
 from .tdip import TDIP
-from .hirip import HIRIP
+# from .hirip import HIRIP
 from .decay import Decay
 from .modelling import (DCIPMModelling, DCIPSeigelModelling,
                         ColeColeTD, DCIPMSmoothModelling,

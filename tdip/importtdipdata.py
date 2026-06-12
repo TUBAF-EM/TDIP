@@ -1,8 +1,8 @@
 import numpy as np
 import pygimli as pg
 from pygimli.physics.ert.importData import (importAsciiColumns,
-                                            importRes2dInv,
-                                            importData)
+                                            importRes2dInv)
+# from pygimli.physics.ert import importData
 
 
 def importTDIPdata(filename, verbose=False):

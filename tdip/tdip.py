@@ -12,7 +12,7 @@ from .importtdipdata import importTDIPdata
 from .modelling import (DCIPMModelling, DCIPSeigelModelling,
                         CCTDModelling, DCIPMSmoothModelling)
 from .decay import Decay
-from ..fdip import FDIP
+# from ..fdip import FDIP
 
 
 class TDIP():
@@ -730,6 +730,8 @@ class TDIP():
         self.response = self.ERT.inv.response
         self.coverage = self.ERT.coverage()
         self.pd = self.ERT.paraDomain
+        self.pd["resistivity"] = self.res
+        self.pd["coverage"] = self.coverage
         if show:
             return self.showResistivity()
 
@@ -1193,6 +1195,9 @@ class TDIP():
         """Save inversion results to .rho and .M file plus mesh."""
         basename = kwargs.pop("basename", self.basename)
         self.pd.save(basename+'_pd.bms')  # better .bms only?
+        self.pd["coverage"] = self.ERT.coverage()
+        self.pd["resistivity"] = self.res
+        self.pd.exportVTK(basename+".vtk")
         if self.res is not None:
             np.savetxt(basename+'.rho', self.res)
         if self.M is not None:
