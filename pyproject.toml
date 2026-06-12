@@ -1,0 +1,142 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+# [tool.setuptools.dynamic]
+# version = {attr = "pygimli._version.__version__"}
+
+[tool.setuptools.packages.find]
+# where = ["./"]  # list of folders that contain the packages (["."] by default)
+include = ["tdip*"]
+# exclude = ["core*"]
+
+[project]
+name = "TDIP"
+dynamic = ["version"]
+
+requires-python = ">=3.10"
+authors = [
+  { name = "Thomas Günther" },
+  { email = "thomas@pygimli.org" },
+]
+description = "Time-domain Induced-polarization"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE.md"]
+keywords = [
+    "Induced Polarization"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Topic :: Scientific/Engineering",
+]
+
+dependencies = [
+    "setuptools>=75.8.2",
+    "pygimli",
+]
+
+[project.urls]
+# Homepage = "https://www.pygimli.org"
+Documentation = "https://TUBAF-EM.github.io/TDIP"
+Repository = "https://github.com/TUBAF-EM/TDIP"
+"Bug Tracker" = "https://github.com/TUBAF-EM/TDIP/issues"
+# Changelog = "https://github.com/TUBAF-EM/TDIP/releases"
+
+[tool.tox.ruff]
+labels = ["ruff"]
+
+line-length = 80
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = [
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "D",  # pydocstyle
+    "E",  # Error
+    "F",  # pyflakes
+    "I",  # isort
+    "N",  # pep8-naming
+    "PGH",  # pygrep-hooks
+    "PTH", # flake8-use-pathlib
+    "Q",  # flake8-quotes
+    "S",  # bandit
+    "SIM",  # flake8-simplify
+    "TRY",  # tryceratops
+    "UP",  # pyupgrade
+    "W",  # Warning
+    "YTT", # flake8-2020
+]
+
+ignore = [
+    # "D100",
+    # "D101",
+    # "D102",
+    # "D103",
+    # "D104",
+    # "D105",
+    # "D106",
+    # "D107",
+    # "D200",
+    # "D401",
+    # "E402",
+    # "E501",
+    # "F401",
+    "C408", # Allow use dic(**kwargs)
+    "E731", # Allow simple lambda function generators
+    "E741", # Allow use of l I o, variable names
+    "I001",  # Allow unsorted imports
+    "N802",  # Allow "as" name should be lowercase
+    "N803",  # Allow name should be lowercase
+    "N806",  # Allow name should be lowercase
+    "N999",  # Allow "wrong" modulname
+    "Q000",  # Allow single quotes in docstrings
+    "Q001",  # Allow double quotes in docstrings
+    "S110",  # Allow use of except/pass
+    "SIM105", # all try: BaseException except: pass
+    "SIM114", # no need for logical if branches
+    "SIM223", # Allow if 0 and ...
+    "TRY003",  # Avoid specifying messages outside exception class; overly strict, especially for ValueError
+]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "chr",
+    "typer.Argument",
+    "typer.Option",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = [
+    # "D100",
+    # "D101",
+    # "D102",
+    # "D103",
+    # "D104",
+    # "D105",
+    # "D106",
+    # "D107",
+    "S101",  # use of "assert"
+    "S102",  # use of "exec"
+    "S106",  # possible hardcoded password.
+    "PGH001",  # use of "eval"
+]
+
+[tool.ruff.lint.pep8-naming]
+staticmethod-decorators = [
+    "pydantic.validator",
+    "pydantic.root_validator",
+]
