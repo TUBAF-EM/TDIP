@@ -12,7 +12,6 @@ from .importtdipdata import importTDIPdata
 from .modelling import (DCIPMModelling, DCIPSeigelModelling,
                         CCTDModelling, DCIPMSmoothModelling)
 from .decay import Decay
-# from ..fdip import FDIP
 
 
 class TDIP():
@@ -1274,6 +1273,7 @@ class TDIP():
     def convertToFD(self, f=None, tau=None):
         """Convert whole data set to FD."""
         from scipy.optimize import nnls
+        from fdip import FDIP
         tau = tau or np.logspace(np.log10(min(self.t)),
                                  np.log10(max(self.t)), 31)
         if f is None:
