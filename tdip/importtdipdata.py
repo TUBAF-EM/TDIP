@@ -132,9 +132,10 @@ def importDIP(filename, verbose=True, return_header=False, return_all=False):
         for xi, zi in zip(ux, uz):
             data.createSensor([xi, 0, zi])
 
+        allabmn = ['A', 'B', 'M', 'N']
         for i in range(ndata):
-            nn = [int(np.nonzero(ux == A['X'+s][i])[0]) for s in
-                  ['A', 'B', 'M', 'N']]
+            # nn = [int(np.nonzero(ux == A['X'+s][i])[0]) for s in allabmn]
+            nn = [np.nonzero(ux == A['X'+s][i])[0][0] for s in allabmn]
             data.createFourPointData(i, *nn)
 
         data.set('valid', A['InUse'])
@@ -171,7 +172,7 @@ def importAres2(filename, verbose=True, return_header=False, return_all=False):
     with open(filename) as fid:
         lines = fid.readlines()
         for i, line in enumerate(lines):
-            lines[i] = re.sub("\*[0-9]", "", line.rstrip())
+            lines[i] = re.sub(r"\*[0-9]", "", line.rstrip())
 
         for i, line in enumerate(lines):
             if line.startswith('C1'):
