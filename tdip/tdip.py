@@ -349,7 +349,9 @@ class TDIP():
         kwargs.setdefault('cMap', 'plasma')
         kwargs.setdefault('logScale', True)
         kwargs.setdefault('label', 'chargeability (mV/V)')
-        return ert.showData(self.data, self.MA[nr], **kwargs)
+        ax, cb = ert.showData(self.data, self.MA[nr], **kwargs)
+        ax.set_title(f'$t$={self.t[nr]:.3f}')
+        return ax, cb
 
     def fitDataDecays(self, show=False, tmin=0):
         """Fit (data) decays by exponential function.
@@ -358,6 +360,13 @@ class TDIP():
             m0 - zero-time chargeability
             tau - characteristic decay time
             fit - RMS of difference between measured and modelled (log) M
+
+        Parameters
+        ----------
+        tmin : float
+            minimum time to be used for the fit
+        show : bool
+            show m0, tau and fit pseudosections
         """
         t = np.copy(self.t)
         fi = np.nonzero(t >= tmin)[0]
@@ -591,8 +600,7 @@ class TDIP():
                 nr = np.intersect1d(nr, fi)
             else:
                 nr.extend(fi)
-        if verbose:
-            print("nr=", nr)
+
         kwargs.setdefault('marker', 'x')
         kwargs.setdefault('xscale', 'log')
         kwargs.setdefault('yscale', 'log')
@@ -600,12 +608,19 @@ class TDIP():
                  self.data.haveData('tau'))
         ls = "" if shFit else "-"
         kwargs.setdefault('ls', ls)
+        if verbose:
+            print("nr=", nr)
+            if shFit:
+                print("fit = " + np.array2string(np.array(self.data['fit'][nr])))
+
         outkeys = ['xlim', 'ylim', 'xlog', 'ylog', 'xscale', 'yscale']
         if isinstance(nr, int):
             nr = [nr]
         if len(nr) > 0:
             if ax is None:
                 self.figs['decay'], ax = plt.subplots()
+
+            fits = []
             for nn in nr:
                 abmn = [int(self.data(t)[nn]+1) for t in ['a', 'b', 'm', 'n']]
                 kw = kwargs.copy()
@@ -629,10 +644,7 @@ class TDIP():
                 if shFit and np.ma.any(ma):
                     fit = self.data['m0'][nn] * \
                         np.exp(-np.array(self.t)/self.data['tau'][nn])
-                    ax.plot(self.t, fit,
-                            color=li.get_color(), ls='--')
-                    if verbose:
-                        print(self.data['fit'][nn])
+                    ax.plot(self.t, fit, color=li.get_color(), ls='--')
 
             ax.grid(True)
             ax.legend()
@@ -662,6 +674,8 @@ class TDIP():
 
         Parameters
         ----------
+        showFit : bool [False]
+            show fitted Debye or Cole-Cole curve
         marker : str ['x']
             marker to use for plotting
         xlim, ylim : float [<automatic>]
@@ -670,6 +684,10 @@ class TDIP():
             scaling of x axis
         yscale : str ['log']
             scaling of y axis
+        xlabel : str [r'$t$ [s]']
+            label for the x axis
+        ylabel : str [r'$m_a$ [mV/V]']
+            label for the y axis
         """
         from matplotlib.backends.backend_pdf import PdfPages
 
