@@ -1,0 +1,8 @@
+site_name: TDIP
+nav:
+  - Home: index.md
+  - Introduction: introduction.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - API Reference: api_reference.md
+# theme: readthedocs
