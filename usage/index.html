@@ -84,6 +84,31 @@
     
     <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
         <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="2"><a href="#preprocessing" class="nav-link">Preprocessing</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-bs-level="2"><a href="#inversion" class="nav-link">Inversion</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-bs-level="2"><a href="#postprocessing" class="nav-link">Postprocessing</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-bs-level="2"><a href="#working-in-3d" class="nav-link">Working in 3D</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-bs-level="2"><a href="#conversion-to-fd" class="nav-link">Conversion to FD</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
         </ul>
     </div>
 </div></div>
@@ -105,7 +130,63 @@
 <li>Ares II format (*.2dm)</li>
 <li>Aarhus Workbench processed data (<em>.tx2 and </em>.dip)</li>
 <li>res2dinv data</li>
-</ul></div>
+</ul>
+<p>You can also use <code>pro.loadData(filename)</code>.</p>
+<p>As a result, the instance holds an ERT data file <code>pro.data</code>, which can be used and processed with the pyGIMLi ERT module, and a matrix of apparent chargeabilities <code>pro.MA</code>.</p>
+<p>For most formats, it should also load the gate times <code>pro.t</code>, if not, they can be set by <code>pro.setGates()</code>.</p>
+<h2 id="preprocessing">Preprocessing</h2>
+<p><code>pro.showRhoa()</code> shows the apparent resistivity. If it is not there yet, it can be created by computing the geometric factor, either analytically or numerically, by <code>ensureRhoa()</code>. This should be done after changing the electrode positions after loading.</p>
+<p><code>.fitDataDecays()</code> fits every decay by a simple Debye (exponential decay) or Cole-Cole (possibly also CPA) model to have a rough guess of the quality of the decay.</p>
+<p>The function <code>.showData()</code> can show every property like <code>'a'</code> or <code>'rhoa'</code>, including he fitted <code>'m0'</code>, <code>'tau'</code> or the fit quality <code>'fit'</code>.</p>
+<p>You can show the apparent chargeability for individual gates by <code>.showApparentChargeability()</code>.
+The function <code>pro.generateDataPDF()</code> generates a multipage PDF with all included data fields.</p>
+<p>Decays can be shown by <code>pro.showDecay()</code> passing an AB or MN combination (or both).
+The function <code>pro.generateDecayPDF()</code> generates a multipage PDF with all decays grouped for the same AB.
+You can also work with individual decays after
+<code>decay=pro.getDecay(abmn=...)</code></p>
+<p>For further manipulation, the functino <code>getDataIndex(abmn=[...])</code> can help you identifying specific numbers.</p>
+<p>Most important preprocessing tool is <code>pro.filter()</code>.
+It works either along the data sequence axis (like <code>data.remove()</code>) or along the time axis and removes complete data (including all gates) or gates (for all data).
+Important keywords are</p>
+<pre><code class="language-python">rmin=0, rmax=1e9, emax=1e9, # apparent resistivity and error
+kmax=1e6, electrode=None, forward=False,
+umin=0, umax=9e9, nr=[],
+a=None, b=None, m=None, n=None, ab=None, mn=None, corrSID=1,
+tmin=0, tmax=1e9, # gate times
+fitmax=1e9, m0max=None, m0min=None, taumin=-9e99, taumax=9e99, # fitted decays
+</code></pre>
+<p>If you don't want to remove the whole data point, but only disregard some erroneous points (like outliers), you can mask these using <code>.mask()</code> with the keywords <code>mamin</code> and <code>mamax</code>.
+You can also mask the whole decay by <code>filter(..., mask=True)</code> in order to not to loose the apparent resistivity information.</p>
+<h2 id="inversion">Inversion</h2>
+<p>First, you start with inverting the apparent resistivity through
+<code>pro.invertRhoa()</code></p>
+<p>This triggers an <code>ERTManager()</code> and you can pass all options.</p>
+<p>You can invert a single apparent chargeability by <code>pro.invertMa()</code> specifying its number (0 for the fitted m0).</p>
+<p>To invert all gates sequentially, use
+<code>pro.individualInversion()</code>
+or simultaneously, use
+<code>pro.simultaneousInversion()</code></p>
+<p>There is a special inversion into Debye models for every cell.
+<code>pro.invertDebye()</code></p>
+<p>Class instances can be accessed by <code>pro.ERT</code>, <code>pro.invIP</code></p>
+<h2 id="postprocessing">Postprocessing</h2>
+<p>As a result of apparent chargeability inversion, you have a matrix of chageabilities <code>pro.M</code> for every model cell, matching the inversion mesh <code>pro.pd</code>.</p>
+<p><code>.getModelDecay()</code> returns a decay class instance for a number or position (using <code>getCellID()</code>).</p>
+<p><code>.fitModelDecays()</code></p>
+<p><code>fitModelDecays()</code> can be used to fit a Cole-Cole model to every model decay, and display <code>m0</code>, <code>tau</code> and <code>c</code> as sections.</p>
+<p><code>showColeColeResults()</code></p>
+<p><code>saveFigures()</code></p>
+<p><code>saveResults()</code></p>
+<p><code>loadResults()</code></p>
+<p>so that you can do postprocessing independent of inversion by</p>
+<pre><code class="language-python">pro = TDIP(filename)
+pro.loadResults()
+...
+</code></pre>
+<h2 id="working-in-3d">Working in 3D</h2>
+<p>While visualization is designed for 2D profiles, numerical computations should work in 3D as well, provided a 3D mesh is created for the ERT manager.</p>
+<h2 id="conversion-to-fd">Conversion to FD</h2>
+<p><code>convertToFD()</code> converts the whole data set to a frequency-domain instance <code>FD</code> (package FDIP required).</p></div>
             </div>
         </div>
 
