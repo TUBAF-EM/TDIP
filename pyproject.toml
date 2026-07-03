@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools"]  # ,"versioneer[toml]"]
 build-backend = "setuptools.build_meta"
 
 # [tool.setuptools.dynamic]
@@ -12,7 +12,8 @@ include = ["tdip*"]
 
 [project]
 name = "TDIP"
-dynamic = ["version"]
+version = "0.5.0"
+# dynamic = ["version"]
 
 requires-python = ">=3.10"
 authors = [
