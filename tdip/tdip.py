@@ -1,5 +1,5 @@
 """Time-Domain Induced Polarization (TDIP) data handling."""
-from os.path import isfile
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -14,7 +14,7 @@ from .modelling import (DCIPMModelling, DCIPSeigelModelling,
 from .decay import Decay
 
 
-class TDIP():
+class TDIP:
     """Class managing time-domain induced polarisation (TDIP) field data."""
 
     def __init__(self, filename=None, **kwargs):
@@ -75,7 +75,7 @@ class TDIP():
         out = ['TDIP data: ' + self.data.__str__()]
         out.append("MA shape = " + str(self.MA.shape))
         out[-1] += ' nt=' + str(len(self.t))
-        out[-1] += " (t={:.3f}-{:.3f}s)".format(min(self.t), max(self.t))
+        out[-1] += f" (t={min(self.t):.3f}-{max(self.t):.3f}s)"
         if hasattr(self, 'header'):
             for key in self.header:
                 val = self.header[key]
@@ -103,9 +103,9 @@ class TDIP():
         """
         assert isinstance(filename, str), "Needs string to load files"
         self.basename = filename[:filename.rfind('.')]
-        if isfile(filename) and not filename.endswith(".shm"):
+        if Path(filename).is_file() and not filename.endswith(".shm"):
             self.data, self.MA, self.t, self.header = importTDIPdata(filename)
-        elif (isfile(self.basename+'.MA') and isfile(self.basename+'.shm')):
+        elif (Path(self.basename+'.MA').is_file() and Path(self.basename+'.shm').is_file()):
             self.data = pg.DataContainerERT(self.basename+'.shm')
             MAT = np.genfromtxt(self.basename+'.MA').T
             self.t = MAT[:, 0]
@@ -489,7 +489,7 @@ class TDIP():
                 fig.clf()
                 ax = fig.add_subplot(111)
                 ert.showData(self.data, ma, ax=ax, **mdict)
-                tstr = " (t={:.3f}s)".format(self.t[i])
+                tstr = f" (t={self.t[i]:.3f}s)"
                 if 'ipGateT' in self.header:
                     tstr = ' (t={:g}-{:g}s)'.format(
                         *(self.header['ipGateT'][i:i+2]))
@@ -503,7 +503,7 @@ class TDIP():
         kwargs.setdefault('cMax', 1000)
         if ax is None:
             fig, ax = plt.subplots()
-            self.figs['MA{:02d}'.format(nr)] = fig
+            self.figs[f'MA{nr:02d}'] = fig
 
         ert.show(self.data, self.MA[nr-1], ax=ax, **kwargs)
 
@@ -537,14 +537,13 @@ class TDIP():
         """
         nr = self.getDataIndex(abmn)
         if isinstance(nr, np.int64):
-            return Decay(self.t, self.MA[:, nr]/1000)
+            return Decay(self.t, self.MA[:, nr] / 1000)
             # return self.MA[:, nr]
         else:
             print(abmn, nr, type(nr))
-            raise Exception("No such abmn combination found.")
+            raise KeyError("No such abmn combination found.")
 
-    def showDecay(self, nr=[], ax=None, ab=None, mn=None, verbose=True,
-                  **kwargs):
+    def showDecay(self, nr=[], ax=None, ab=None, mn=None, verbose=True, **kwargs):
         """Show decay curves for groups of data.
 
         Parameters
@@ -620,7 +619,6 @@ class TDIP():
             if ax is None:
                 self.figs['decay'], ax = plt.subplots()
 
-            fits = []
             for nn in nr:
                 abmn = [int(self.data(t)[nn]+1) for t in ['a', 'b', 'm', 'n']]
                 kw = kwargs.copy()
@@ -858,8 +856,7 @@ class TDIP():
         if reg:
             self.invIP.setRegularization(**reg)
         self.m = self.invIP.run(ma, maerr/ma, startModel=mstart, **kwargs)
-        print("chi^2={:.1f} RMS={:.1f}mV/V".format(self.invIP.chi2(),
-                                                   self.invIP.absrms()*1000))
+        pg.info(f"chi^2={self.invIP.chi2():.1f} RMS={self.invIP.absrms()*1000:.1f}mV/V")
         if show:
             return self.showChargeability()
         else:
@@ -932,7 +929,7 @@ class TDIP():
     def showChargeability(self, ax=None, **kwargs):
         """Show chargeability inversion result.
 
-        Any kwargs (cMin, cMax, logScale) are forwarded to pg.show.
+        Any kwargs (ax, cMin, cMax, logScale) are forwarded to pg.show.
         """
         kwargs.setdefault('label', 'chargeability [mV/V]')
         kwargs.setdefault('cMap', 'plasma')
@@ -972,7 +969,7 @@ class TDIP():
 
         self.M = np.zeros((len(self.MA), len(self.res)))
         for i, ma in enumerate(self.MA):
-            print('Inverting gate {}'.format(i+1))
+            pg.info(f'Inverting gate {i+1}')
             error[:] = errLevel
             if isinstance(ma, np.ma.MaskedArray):
                 madata = np.copy(ma.data)
@@ -1067,12 +1064,12 @@ class TDIP():
                 z = kwargs.pop("y", None)
             if x is None and z is None:
                 raise NameError("Specify either position vector or x and z")
-            if isinstance(x, float) or isinstance(x, int):
+            if isinstance(x, (float, int)):
                 x = np.ones_like(z) * x
-            if isinstance(z, float) or isinstance(z, int):
+            if isinstance(z, (float, int)):
                 z = np.ones_like(x) * z
 
-            positions = [[xi, zi] for xi, zi in zip(x, z)]
+            positions = [[xi, zi] for xi, zi in zip(x, z, strict=False)]
 
         for pos in positions:
             label = 'x={:.1f} z={:.1f}'.format(*pos)
@@ -1198,7 +1195,7 @@ class TDIP():
                 fig.clf()
                 ax = fig.add_subplot(111)
                 pg.show(self.pd, self.M[i, :]*1000, ax=ax, **mdict)
-                ax.set_title(r'$t({:d})$={:e}'.format(i, t))
+                ax.set_title(rf'$t({i:d})$={t:e}')
                 fig.savefig(pdf, format='pdf')
 
     def saveFigures(self, ext='.pdf', **kwargs):
@@ -1244,15 +1241,15 @@ class TDIP():
         """
         basename = kwargs.pop("basename", self.basename)
         self.pd = pg.Mesh(basename+'_pd.bms')
-        if isfile(basename+'.rho'):
+        if Path(basename+'.rho').is_file():
             self.res = np.loadtxt(basename+'.rho')
-        if isfile(basename+'.M'):
+        if Path(basename+'.M').is_file():
             self.M = np.loadtxt(basename+'.M').T
             if self.M.shape[0] == self.pd.cellCount():  # old style
                 self.M = self.M.T
-        if isfile(basename+'.mtc') or isfile(basename+'.rmtc'):
+        if Path(basename+'.mtc').is_file() or Path(basename+'.rmtc').is_file():
             self.loadFit(basename=basename)
-        if isfile(basename+".rtd"):
+        if Path(basename+".rtd").is_file():
             B = np.loadtxt(basename+".rtd")
             self.tau = B[0]
             self.modelDebye = B[1:].T
@@ -1278,10 +1275,10 @@ class TDIP():
     def loadFit(self, **kwargs):
         """Load fitted chargeability, time constant & exponent from file."""
         basename = kwargs.pop("basename", self.basename)
-        if isfile(basename+".rmtc"):
+        if Path(basename+".rmtc").is_file():
             self.res, self.m0, self.tau, self.c, self.fit = np.loadtxt(
                 basename+'.rmtc', unpack=1)
-        elif isfile(basename+".mtc"):
+        elif Path(basename+".mtc").is_file():
             self.m0, self.tau, self.c, self.fit = np.loadtxt(
                 basename+'.mtc', unpack=1)
             pg.info("Loading deprecated fit result (mtc) instead of rmtc")
@@ -1289,7 +1286,7 @@ class TDIP():
             pg.warn("Could not find fit result " + basename + ".(r)mtc")
 
     def convertToFD(self, f=None, tau=None):
-        """Convert whole data set to FD."""
+        """Convert whole data set to FDIP instance (requires FDIP package)."""
         from scipy.optimize import nnls
         from fdip import FDIP
         tau = tau or np.logspace(np.log10(min(self.t)),
@@ -1341,6 +1338,8 @@ class TDIP():
         verbose : bool [False]
             some output
         """
+        from fdip import FDIP
+
         if "scheme" in kwargs:
             self.data = kwargs.pop("scheme")
 
