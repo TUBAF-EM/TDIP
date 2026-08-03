@@ -4,7 +4,16 @@ nav:
   - Introduction: introduction.md
   - Installation: installation.md
   - Usage: usage.md
-  # - API Reference: api_reference.md
+  - API Reference: tdip.md
+  - Example: example.ipynb
 # theme: readthedocs
 plugins:
-  - mkdocs_apidoc
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+  - mknotebooks:
+      execute: false
+      title: Example

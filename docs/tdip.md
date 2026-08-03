@@ -1,2 +1,3 @@
-<!-- {{ auto_module("tdip") }} -->
-{{ auto_object("tdip.TDIP") }}
+## TDIP class
+
+::: tdip.TDIP
