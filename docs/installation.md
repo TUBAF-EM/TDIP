@@ -1,4 +1,11 @@
-To use the package and keep updated, just
+To install the software, you can just type
+```
+pip install TDIP
+```
+
+## Staying updated
+
+To keep updated with the development independend on versions, just
 
 1. `git clone` the repository and go to its location with bash, PowerShell etc.
 2. install the code editable by `pip install -e .`
