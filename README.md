@@ -3,14 +3,17 @@
 Formerly part of BERT repository, but since 2026 independent.
 The code is based upon pyGIMLi (Rücker et al. 2017) and its ERT module based on Günther et al. (2006).
 Whereas the ERT module only includes only single-frequency or chargeability inversion, TDIP is designed for analysing the spectral induced polarization (SIP) in the time domain. For frequency domain SIP, please use [FDIP](https://github.com/TUBAF-EM/FDIP)
-For details and examples, we refer to Martin et al. (2020) where it was first used, and the accompagnying Zenodo data sets with codes.
+For details and examples, we refer to Martin et al. (2020) where it was first used, and the accompanying Zenodo data sets with codes.
 Further application was already published by Rossi et al. (2018) or Bazin et al. (2018).
 
-To use the package and keep updated, just
+The package can be installed by `pip install FDIP`.
+It is hosted at <https://github.com/TUBAF-EM/FDIP>.
+To use the package and stay updated, just
 
-1. `git clone` the repository and go to its location with bash, PowerShell etc.
-2. install the code editable by `pip install -e .`
-3. Update at any later time by `git pull` (no further step needed)
+1. `git clone https://github.com/TUBAF-EM/FDIP.git`
+2. to its location with bash, PowerShell etc.
+3. install the code editable by `pip install -e .`
+4. Update at any later time by `git pull`
 
 If you use UV, the simplest way is to create a virtual environment by typing `uv run` in the project folder.
 The venv is created in the main folder and if you open the folder in VSCode it is chosen as default environment.

@@ -6,15 +6,6 @@ Whereas the ERT module only includes only single-frequency or chargeability inve
 For details and examples, we refer to Martin et al. (2020) where it was first used, and the accompagnying Zenodo data sets with codes.
 Further application was already published by Rossi et al. (2018) or Bazin et al. (2018).
 
-To use the package and keep updated, just
-
-1. `git clone` the repository and go to its location with bash, PowerShell etc.
-2. install the code editable by `pip install -e .`
-3. Update at any later time by `git pull` (no further step needed)
-
-If you use UV, the simplest way is to create a virtual environment by typing `uv run` in the project folder.
-The venv is created in the main folder and if you open the folder in VSCode it is chosen as default environment.
-
 ## References
 
 * Martin, T., Günther, T., Orozco, A.F. & Dahlin, T. (2020): Evaluation of spectral induced polarization field measurements in time and frequency domain, J. Appl. Geophys. 180, 104141, [doi:10.1016/j.jappgeo.2020.104141](https://doi.org/10.1016/j.jappgeo.2020.104141).
