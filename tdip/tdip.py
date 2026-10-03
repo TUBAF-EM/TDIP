@@ -74,17 +74,18 @@ class TDIP:
         """Readable representation of the class."""
         out = ['TDIP data: ' + self.data.__str__()]
         out.append("MA shape = " + str(self.MA.shape))
-        out[-1] += ' nt=' + str(len(self.t))
+        out[-1] += f" nt={len(self.t)}"
         out[-1] += f" (t={min(self.t):.3f}-{max(self.t):.3f}s)"
         if hasattr(self, 'header'):
-            for key in self.header:
-                val = self.header[key]
-                if isinstance(val, str):
-                    out.append(val)
-                elif isinstance(val, (int, float)):
-                    out.append(key+' = '+str(val))
-                else:
-                    out.append(key+' = array('+str(val.shape)+')')
+            print("header keys: ", self.header.keys())
+            # for key in self.header:
+            #     val = self.header[key]
+            #     if isinstance(val, str):
+            #         out.append(val)
+            #     elif isinstance(val, (int, float)):
+            #         out.append(key+' = '+str(val))
+            #     else:
+            #         out.append(key+' = array('+str(val.shape)+')')
         return "\n".join(out)
 
     def loadData(self, filename=None):  # , **kwargs):
@@ -804,7 +805,7 @@ class TDIP:
         if hasattr(errLevel, '__iter__') and len(errLevel) == len(ma):
             maerr = errLevel
         else:
-            maerr = np.ones_like(ma) * errLevel
+            maerr = np.abs(np.ones_like(ma) * errLevel)
 
         # restrict values above 1
         if 0:
@@ -855,7 +856,7 @@ class TDIP:
         kwargs.setdefault('lam', 100)
         if reg:
             self.invIP.setRegularization(**reg)
-        self.m = self.invIP.run(ma, maerr/ma, startModel=mstart, **kwargs)
+        self.m = self.invIP.run(ma, np.abs(maerr/ma), startModel=mstart, **kwargs)
         pg.info(f"chi^2={self.invIP.chi2():.1f} RMS={self.invIP.absrms()*1000:.1f}mV/V")
         if show:
             return self.showChargeability()
