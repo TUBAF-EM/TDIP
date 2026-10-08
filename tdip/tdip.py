@@ -33,6 +33,12 @@ class TDIP:
                 * res2dinv data
 
         **kwargs:
+            * data : pg.DataContainer
+                ERT data container including apparent resistivity
+            * t : array
+                gate time vector
+            * MA : array[len(t), data.size()]
+                apparent chargeability in mV/V
             * paraGeometry : PLC (pygimli mesh holding geometry)
                 plc for the 2d inversion domain
             * paraMesh : pygimli Mesh instance
@@ -44,10 +50,9 @@ class TDIP:
         self.basename = 'newfile'  # for saving results and images
         self.figs = {}  # figure container
         self.header = {}  # header for supplemental information
-        self.t = np.array([])
-        tt = kwargs.pop('t', None)  # save time vector temp
+        self.t = kwargs.pop("t", np.array([]))
+        # tt = kwargs.pop('t', None)  # save time vector temp
         self.data = kwargs.pop('data', None)  # data container
-        self.rhoa = kwargs.pop('rhoa', None)  # app. resistivity matrix [Ohm m]
         self.MA = kwargs.pop('MA', None)  # app. chargeability matrix [mV/V]
         self.ERT = None  # Resistivity manager class instance
         self.sINV = None  # single inversion instance
@@ -67,8 +72,8 @@ class TDIP:
             if not self.data.exists('k'):
                 self.data['k'] = ert.geometricFactors(self.data, dim=2)
 
-        if tt is not None:
-            self.t = tt
+        # if tt is not None:
+        #     self.t = tt
 
     def __repr__(self):  # for print function
         """Readable representation of the class."""
@@ -99,6 +104,7 @@ class TDIP:
         GDD - GDD format (less tested)
         TX2 - Aarhus Workbench data
         DIP - AarhusInv (processed) data
+        QUI - EEM data
         OHM - BERT format with ip1, ip2, ... fields
         OHM/MA - BERT format with scheme file and MA file
         """
@@ -629,9 +635,9 @@ class TDIP:
 
                 ma = self.MA[:, nn]
                 if kw.pop('invalid', False):
-                    ax.plot(self.t, ma.data, color='gray', ms=2,
+                    ax.plot(self.t[ma.data>0], ma.data[ma.data>0], color='gray', ms=2,
                             marker=kwargs["marker"], ls=ls)
-                    ax.plot(self.t, -np.array(ma.data), ls='--',
+                    ax.plot(self.t[ma.data<0], -np.array(ma.data[ma.data<0]), ls='--',
                             color='lightgray', ms=2, marker=kwargs["marker"])
                 if ab is not None:
                     kw.setdefault('label', (bs+': '+'{:d} '*2).format(
@@ -639,7 +645,9 @@ class TDIP:
                     kw.setdefault('color', "C"+str(abmn[2] % 9))
                 else:
                     kw.setdefault('label', (bs+': '+'{:d} '*4).format(*abmn))
-                li = ax.plot(self.t, ma, **kw)[0]
+
+                li = ax.plot(self.t[ma>0], ma[ma>0], **kw)[0]
+                # li2 = ax.plot(self.t[ma<0], -ma[ma<0], **kw)[0]
                 if shFit and np.ma.any(ma):
                     fit = self.data['m0'][nn] * \
                         np.exp(-np.array(self.t)/self.data['tau'][nn])

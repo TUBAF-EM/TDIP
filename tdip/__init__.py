@@ -5,6 +5,7 @@
 from .tdip import TDIP
 # from .hirip import HIRIP
 from .decay import Decay
+from .importtdipdata import importTDIPdata as importData
 from .modelling import (DCIPMModelling, DCIPSeigelModelling,
                         ColeColeTD, DCIPMSmoothModelling,
                         CCTDModelling, MultiDebyeTDModelling)
@@ -12,4 +13,5 @@ from .modelling import (DCIPMModelling, DCIPSeigelModelling,
 TDIPdata = TDIP  # backward compatibility
 
 __all__ = ['TDIP', 'TDIPdata', 'HIRIP', 'Decay', 'DCIPMModelling',
-           'DCIPSeigelModelling', 'ColeColeTD', 'MultiDebyeTDModelling']
+           'DCIPSeigelModelling', 'ColeColeTD', 'MultiDebyeTDModelling',
+           'importData', 'importTDIPdata']

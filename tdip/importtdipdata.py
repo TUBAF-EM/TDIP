@@ -1,8 +1,9 @@
+"""Import functions for TDIP data."""
+from io import StringIO
 import numpy as np
 import pygimli as pg
 from pygimli.physics.ert.importData import (importAsciiColumns,
                                             importRes2dInv)
-# from pygimli.physics.ert import importData
 
 
 def importTDIPdata(filename, verbose=False):
@@ -18,6 +19,7 @@ def importTDIPdata(filename, verbose=False):
     TX2 - Aarhus Workbench data
     DIP - AarhusInv (processed) data
     DAT - Res2dInv format
+    QUI - EEM DCIP format
 
     Returns
     -------
@@ -43,10 +45,14 @@ def importTDIPdata(filename, verbose=False):
         #     return importABEM(filename, return_all=True)
         elif ext.lower() == 'dip':
             return importDIP(filename, return_all=True)
+        elif ext.lower() == 'qui':
+            return importQUI(filename, return_all=True)
         elif ext.lower() == '2dm':
             return importAres2(filename, return_all=True)
         else:
-            data = importData(filename)
+            raise NotImplemented("Could not import file", filename)
+            # data = importData(filename) # pg
+
     elif isinstance(filename, pg.DataContainer):
         data = filename
     else:
@@ -254,4 +260,54 @@ def importAres2(filename, verbose=True, return_header=False, return_all=False):
             return data, header
         else:
             return data
+
+
+def importQUI(filename, verbose=True, return_header=False, return_all=True):
+    """Import ERT/IP data from QUI (EEM software) format."""
+    import pandas as pd
+    header = {}
+    with open(filename) as fid:
+        lines = fid.readlines()
+    # check different sections of file
+    n = []
+    j = 0
+    for i in range(12):
+        while not lines[j].startswith(f"%{i}"):
+            j += 1
+
+        n.append(j)
+        lines[j] = lines[j][3:]
+    # determine number of electrodes, gates and data
+    nel = int(lines[n[2]+1].split()[1])
+    ngates = int(lines[n[2]+1].split()[4])
+    ndata = int(lines[n[2]+1].split()[-1])
+    # electrode positions
+    dfEl = pd.read_csv(StringIO("\n".join(lines[n[4]:n[4]+nel+1])), sep=r"\s+")
+    dtx = np.sqrt(np.diff(dfEl["UTMx"])**2+np.diff(dfEl["UTMy"])**2)
+    tx = np.hstack([0, np.cumsum(np.round(dtx/2)*2)]) # be careful
+    data = pg.DataContainerERT()
+    data.setSensors(np.column_stack([tx, tx*0]))
+    elpos = np.column_stack([dfEl["UTMx"], dfEl["UTMy"], dfEl["Elevation"]])
+    data.setAdditionalPoints(elpos)
+    # time gates
+    dfGate = pd.read_csv(StringIO("\n".join(lines[n[7]:n[7]+ngates+1])), sep=r"\s+")
+    t = np.array(dfGate.GateTime)
+    # actual data
+    dfData = pd.read_csv(StringIO("\n".join(lines[n[11]:n[11]+ndata+1])), sep=r"\s+")
+    data.resize(ndata)
+    data["a"] = np.array(dfData.CW01Tx01) - 1
+    data["b"] = np.array(dfData.CW01Tx02) - 1
+    data["m"] = np.array(dfData.Rx1) - 1
+    data["n"] = np.array(dfData.Rx2) - 1
+    data["rhoa"] = np.array(dfData.Rho)
+    data["valid"] = 1
+    MA = np.column_stack([dfData[f"M{i:03d}"] for i in range(1, ngates)])
+    Mflag = np.column_stack([dfData[f"MFlag{i:03d}"] for i in range(1, ngates)])
+    MA=np.ma.MaskedArray(MA, Mflag).T
+    if return_all:  # the variant needed for the TDIP class
+        return data, MA, t, header
+    elif return_header:
+        return data, header
+    else:
+        return data
 
