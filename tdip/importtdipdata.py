@@ -305,7 +305,7 @@ def importQUI(filename, verbose=True, return_header=False, return_all=True):
     Mflag = np.column_stack([dfData[f"MFlag{i:03d}"] for i in range(1, ngates)])
     MA=np.ma.MaskedArray(MA, Mflag).T
     if return_all:  # the variant needed for the TDIP class
-        return data, MA, t, header
+        return data, MA, t[:len(MA)], header
     elif return_header:
         return data, header
     else:
